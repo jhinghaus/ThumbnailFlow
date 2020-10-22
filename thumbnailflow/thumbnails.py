@@ -168,7 +168,7 @@ class Thumbnail(object):
             image.save(output, format='JPEG')
             image_data = output.getvalue()
             base64_string = base64.b64encode(image_data).decode('utf-8')
-            return 'data:image/jpg;base64,' + base64_string
+            return 'data:image/jpeg;base64,' + base64_string
         else:
             return ''
 
