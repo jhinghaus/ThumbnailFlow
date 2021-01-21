@@ -41,10 +41,13 @@ def generate_dir_thumbs(folder):
     if not(os.path.isdir(folder)):
         return
     dir_thumbs = make_dir_thumbs(folder=folder)
+    concat = '[\n'
     for thumbnail in dir_thumbs:
         thumb_dict = thumbnail.as_dict()
-        thumb_json = json.dumps(thumb_dict)
+        thumb_json = concat + json.dumps(thumb_dict)
         yield thumb_json
+        concat = ',\n'
+    yield ']'
 
 def generate_file_thumbs(folder, preserve=False):
     '''
@@ -64,12 +67,12 @@ def generate_file_thumbs(folder, preserve=False):
     if preserve:
         new_thumbs_file = old_thumbs_file + str(uuid.uuid4())
         fp = open(new_thumbs_file,'w', encoding='utf-8')
-        fp.write('[\n')
     else:
         fp = thumbnailflow.devnull.DevNull()
     dirty = False
 
     try:
+        concat = '[\n'
         for thumbnail in file_thumbs:
             if ((current_known['name'] == thumbnail.name) and
                 (current_known['touched'] == thumbnail.touched)):
@@ -78,10 +81,10 @@ def generate_file_thumbs(folder, preserve=False):
             else:
                 thumb_dict = thumbnail.as_dict()
                 dirty = True
-            thumb_json = json.dumps(thumb_dict)
+            thumb_json = concat + json.dumps(thumb_dict)
             fp.write(thumb_json)
-            fp.write(',\n')
             yield thumb_json
+            concat = ',\n'
     except GeneratorExit:
         # the new file can't be complete: Do not write.
         dirty = False
@@ -96,6 +99,7 @@ def generate_file_thumbs(folder, preserve=False):
             fp.truncate()
             fp.close()
             os.remove(new_thumbs_file)
+    yield ']'
 
 def make_file_thumbs(folder):
     '''  Returns a list of Thumbnail objects
