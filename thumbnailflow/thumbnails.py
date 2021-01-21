@@ -32,21 +32,21 @@ import uuid
 import thumbnailflow.devnull
 
 
-def generateDirThumbs(folder):
+def generate_dir_thumbs(folder):
     '''
-    Generator returning thumbsnails for folders in the given folder in json.
-    No preserve flag implemented so farself.
+    Generator returning thumbnails for folders in the given folder in json.
+    No preserve flag implemented so far.
     Preview of contained files could be implemented later.
     '''
     if not(os.path.isdir(folder)):
         return
-    dir_thumbs = makeDirThumbs(folder=folder)
+    dir_thumbs = make_dir_thumbs(folder=folder)
     for thumbnail in dir_thumbs:
-        thumb_dict = thumbnail.getDict()
+        thumb_dict = thumbnail.as_dict()
         thumb_json = json.dumps(thumb_dict)
         yield thumb_json
 
-def generateFileThumbs(folder, preserve=False):
+def generate_file_thumbs(folder, preserve=False):
     '''
     Generator returning thumbsnails for files in the given folder in json.
     Checks for an existing file with generated thumbnails.
@@ -57,8 +57,8 @@ def generateFileThumbs(folder, preserve=False):
     # check for a thumbnail-file
     old_thumbs_file = os.path.join(folder,DEFAULT_FILENAME)
 
-    file_thumbs = makeFileThumbs(folder=folder)
-    known_iterator = generateKnownThumbs(old_thumbs_file)
+    file_thumbs = make_file_thumbs(folder=folder)
+    known_iterator = generate_known_thumbs(old_thumbs_file)
     # start the iterator before we open the file to write
     current_known = next(known_iterator)
     if preserve:
@@ -76,7 +76,7 @@ def generateFileThumbs(folder, preserve=False):
                 thumb_dict = current_known
                 current_known = next(known_iterator)
             else:
-                thumb_dict = thumbnail.getDict()
+                thumb_dict = thumbnail.as_dict()
                 dirty = True
             thumb_json = json.dumps(thumb_dict)
             fp.write(thumb_json)
@@ -97,7 +97,7 @@ def generateFileThumbs(folder, preserve=False):
             fp.close()
             os.remove(new_thumbs_file)
 
-def makeFileThumbs(folder):
+def make_file_thumbs(folder):
     '''  Returns a list of Thumbnail objects
     for the files in the given folder.
     The files are sorted by date desc '''
@@ -112,10 +112,10 @@ def makeFileThumbs(folder):
             file_thumbs.append(f)
         break # only this folder
     return sorted(file_thumbs,
-                           key=Thumbnail.keyTouched,
-                           reverse=True)
+                  key=Thumbnail.key_touched,
+                  reverse=True)
 
-def makeDirThumbs(folder):
+def make_dir_thumbs(folder):
     '''  Returns a list of Thumbnail objects
     for the folders in the given folder.'''
 
@@ -127,7 +127,7 @@ def makeDirThumbs(folder):
         break # only this folder
     return dir_thumbs
 
-def generateKnownThumbs(path):
+def generate_known_thumbs(path):
     ''' Generate thumbnail dictionaries from the given file
     return a dummy when exhausted'''
 
@@ -141,9 +141,14 @@ def generateKnownThumbs(path):
     yield {'name':'', 'touched':0}
 
 class Thumbnail(object):
+    '''
+    Thumbnail of one file.
+    Image files will have a data_url.
+    The data_url is created only when needed.
+    '''
 
     @staticmethod
-    def keyTouched(tf):
+    def key_touched(tf):
         return tf.touched
 
     def __init__(self, root, name):
@@ -157,7 +162,7 @@ class Thumbnail(object):
             components = os.path.splitext(self.path)
             self.type = components[1].lower().lstrip('.')
 
-    def generateDataURL(self):
+    def data_url(self):
 
         if self.type in IMAGE_TYPES:
             # read the image
@@ -172,9 +177,9 @@ class Thumbnail(object):
         else:
             return ''
 
-    def getDict(self):
+    def as_dict(self):
 
         return {'name': self.name,
                 'type': self.type,
                 'touched': self.touched,
-                'data_url': self.generateDataURL()}
+                'data_url': self.data_url()}

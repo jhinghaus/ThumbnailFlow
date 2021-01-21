@@ -31,13 +31,13 @@ class ThumbsTC(unittest.TestCase):
 
     def test_generate_dir(self):
         t_object = thumbnailflow.thumbnails.Thumbnail(root=self.dir.name, name='exampledir')
-        py_dict = t_object.getDict()
+        py_dict = t_object.as_dict()
         self.assertEqual(py_dict['name'], 'exampledir')
         self.assertEqual(py_dict['type'], 'dir')
 
     def test_generate_txt(self):
         t_object = thumbnailflow.thumbnails.Thumbnail(root=self.dir.name, name='example.txt')
-        py_dict = t_object.getDict()
+        py_dict = t_object.as_dict()
         self.assertEqual(py_dict['name'], 'example.txt')
         self.assertEqual(py_dict['type'], 'txt')
         self.assertLess(py_dict['touched'], time.time(), 'Touched in future')
@@ -45,7 +45,7 @@ class ThumbsTC(unittest.TestCase):
 
     def test_generate_png(self):
         t_object = thumbnailflow.thumbnails.Thumbnail(root=self.dir.name, name='example.png')
-        py_dict = t_object.getDict()
+        py_dict = t_object.as_dict()
         self.assertEqual(py_dict['name'], 'example.png')
         self.assertEqual(py_dict['type'], 'png')
         self.assertGreater(len(py_dict.get('data_url', '')), 1)
@@ -53,7 +53,7 @@ class ThumbsTC(unittest.TestCase):
 
     def test_get_dirs(self):
         names = []
-        for thumb in thumbnailflow.thumbnails.generateDirThumbs(self.dir.name):
+        for thumb in thumbnailflow.thumbnails.generate_dir_thumbs(self.dir.name):
             py_dict = json.loads(thumb)
             names.append(py_dict['name'])
         self.assertEqual(len(names), 1)
@@ -61,7 +61,7 @@ class ThumbsTC(unittest.TestCase):
 
     def test_get_files_without_preserve(self):
         names = []
-        for thumb in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name):
+        for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name):
             py_dict = json.loads(thumb)
             names.append(py_dict['name'])
         self.assertEqual(len(names), 2)
@@ -72,7 +72,7 @@ class ThumbsTC(unittest.TestCase):
 
     def test_get_files_with_preserve(self):
         names = []
-        for thumb in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True):
+        for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True):
             py_dict = json.loads(thumb)
             names.append(py_dict['name'])
         self.assertEqual(len(names), 2)
@@ -89,10 +89,10 @@ class ThumbsTC(unittest.TestCase):
 
 
     def test_usage_of_perserved(self):
-        thumbs = [t for t in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True)]
+        thumbs = [t for t in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True)]
         first_creation = os.path.getmtime(self.thumbfile_path)
         #time.sleep(0.1)
-        thumbs = [t for t in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True)]
+        thumbs = [t for t in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True)]
         if not(os.path.isfile(self.thumbfile_path)):
             self.assertTrue(False, 'No thumbs file generated')
         thumbs_created = os.path.getmtime(self.thumbfile_path)
@@ -104,7 +104,7 @@ class ThumbsTC(unittest.TestCase):
         # set the timestamp
         os.utime(self.example_png, None)
         thumbs = {}
-        for thumb in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True):
+        for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True):
             py_dict = json.loads(thumb)
             thumbs[py_dict['name']] = py_dict
         png_touched = max(os.path.getmtime(self.thumbfile_path),
@@ -119,12 +119,12 @@ class ThumbsTC(unittest.TestCase):
         self.assertEqual(self.count_thumbfiles(), 1, 'Temp file not deleted')
 
     def test_remove_tempfile(self):
-        thumbs = [t for t in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True)]
+        thumbs = [t for t in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True)]
         time.sleep(0.1)
         # set the timestamp
         os.utime(self.example_png, None)
         os.utime(self.example_txt, None)
-        for t in thumbnailflow.thumbnails.generateFileThumbs(self.dir.name, True):
+        for t in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True):
             break
         self.assertEqual(self.count_thumbfiles(), 1, 'Temp file not deleted')
 
