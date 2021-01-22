@@ -90,7 +90,6 @@ def generate_file_thumbs(folder, preserve=False):
         dirty = False
     if preserve:
         if dirty:
-            fp.seek(fp.tell() - 2, os.SEEK_SET)
             fp.write(']')
             fp.close()
             os.replace(new_thumbs_file, old_thumbs_file)
@@ -140,7 +139,7 @@ def generate_known_thumbs(path):
         with open(path,'r') as fp:
             for line in fp:
                 if not(line in ('[\n', ']')):
-                    yield json.loads(line[:-2])
+                    yield json.loads(line.strip('[],\n'))
 
     yield {'name':'', 'touched':0}
 
