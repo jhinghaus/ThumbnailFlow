@@ -53,17 +53,23 @@ class ThumbsTC(unittest.TestCase):
 
     def test_get_dirs(self):
         names = []
+        json_string = ''
         for thumb in thumbnailflow.thumbnails.generate_dir_thumbs(self.dir.name):
-            py_dict = json.loads(thumb)
-            names.append(py_dict['name'])
+            json_string += thumb
+        all_thumbs = json.loads(json_string)
+        for thumb_dict in all_thumbs:
+            names.append(thumb_dict['name'])
         self.assertEqual(len(names), 1)
         self.assertIn('exampledir', names)
 
     def test_get_files_without_preserve(self):
         names = []
+        json_string = ''
         for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name):
-            py_dict = json.loads(thumb)
-            names.append(py_dict['name'])
+            json_string += thumb
+        all_thumbs = json.loads(json_string)
+        for thumb_dict in all_thumbs:
+            names.append(thumb_dict['name'])
         self.assertEqual(len(names), 2)
         self.assertIn('example.txt', names)
         self.assertIn('example.png', names)
@@ -72,9 +78,12 @@ class ThumbsTC(unittest.TestCase):
 
     def test_get_files_with_preserve(self):
         names = []
+        json_string = ''
         for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True):
-            py_dict = json.loads(thumb)
-            names.append(py_dict['name'])
+            json_string += thumb
+        all_thumbs = json.loads(json_string)
+        for thumb_dict in all_thumbs:
+            names.append(thumb_dict['name'])
         self.assertEqual(len(names), 2)
         self.assertIn('example.txt', names)
         self.assertIn('example.png', names)
@@ -105,8 +114,10 @@ class ThumbsTC(unittest.TestCase):
         os.utime(self.example_png, None)
         thumbs = {}
         for thumb in thumbnailflow.thumbnails.generate_file_thumbs(self.dir.name, True):
-            py_dict = json.loads(thumb)
-            thumbs[py_dict['name']] = py_dict
+            if thumb != ']':
+                py_dict = json.loads(thumb.strip('\n,[]'))
+                thumbs[py_dict['name']] = py_dict
+
         png_touched = max(os.path.getmtime(self.thumbfile_path),
                           os.path.getctime(self.thumbfile_path))
         self.assertGreater(png_touched,
