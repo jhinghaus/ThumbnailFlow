@@ -18,10 +18,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-THUMB_SIZE = 64, 64
-IMAGE_TYPES = ['jpg','jpeg','bmp','gif','png']
-DEFAULT_FILENAME = '.thumbs.json'
-
 import os
 import os.path
 from PIL import Image
@@ -30,7 +26,12 @@ import base64
 import json
 import uuid
 import thumbnailflow.devnull
+from thumbnailflow import config
 
+
+def configure_size(size):
+    ''' Set the thumbnail size for all the following calls '''
+    config.THUMB_SIZE = size, size
 
 def generate_dir_thumbs(folder):
     '''
@@ -58,7 +59,7 @@ def generate_file_thumbs(folder, preserve=False):
     if not(os.path.isdir(folder)):
         return
     # check for a thumbnail-file
-    old_thumbs_file = os.path.join(folder,DEFAULT_FILENAME)
+    old_thumbs_file = os.path.join(folder, config.DEFAULT_FILENAME)
 
     file_thumbs = make_file_thumbs(folder=folder)
     known_iterator = generate_known_thumbs(old_thumbs_file)
@@ -109,7 +110,7 @@ def make_file_thumbs(folder):
     for root, dirs, files in os.walk(folder):
         filepaths = []
         for filename in files:
-            if filename == DEFAULT_FILENAME:
+            if filename == config.DEFAULT_FILENAME:
                 continue
             f = Thumbnail(root=root, name=filename)
             file_thumbs.append(f)
@@ -167,10 +168,10 @@ class Thumbnail(object):
 
     def data_url(self):
 
-        if self.type in IMAGE_TYPES:
+        if self.type in config.IMAGE_TYPES:
             # read the image
             image = Image.open(self.path)
-            image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+            image.thumbnail(config.THUMB_SIZE, Image.ANTIALIAS)
             # write the thumbnail to a buffer
             output = BytesIO()
             image.save(output, format='JPEG')

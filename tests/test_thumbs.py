@@ -15,7 +15,7 @@ class ThumbsTC(unittest.TestCase):
         self.dir = tempfile.TemporaryDirectory()
         self.thumbfile_path = os.path.join(
                                     self.dir.name,
-                                    thumbnailflow.thumbnails.DEFAULT_FILENAME)
+                                    thumbnailflow.config.DEFAULT_FILENAME)
         # create some content
         self.example_dir = os.path.join(self.dir.name, 'exampledir')
         os.mkdir(self.example_dir)
@@ -143,7 +143,7 @@ class ThumbsTC(unittest.TestCase):
         thumb_files_found = 0
         for root, dirs, files in os.walk(self.dir.name):
             for f in files:
-                if f.startswith(thumbnailflow.thumbnails.DEFAULT_FILENAME):
+                if f.startswith(thumbnailflow.config.DEFAULT_FILENAME):
                     thumb_files_found += 1
             break
         return thumb_files_found
