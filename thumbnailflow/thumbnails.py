@@ -89,16 +89,19 @@ def generate_file_thumbs(folder, preserve=False):
     except GeneratorExit:
         # the new file can't be complete: Do not write.
         dirty = False
-    if preserve:
-        if dirty:
-            fp.write(']')
-            fp.close()
-            os.replace(new_thumbs_file, old_thumbs_file)
-        else:
-            fp.seek(0)
-            fp.truncate()
-            fp.close()
-            os.remove(new_thumbs_file)
+        # nobody wants the rest of the data
+        return
+    finally:
+        if preserve:
+            if dirty:
+                fp.write(']')
+                fp.close()
+                os.replace(new_thumbs_file, old_thumbs_file)
+            else:
+                fp.seek(0)
+                fp.truncate()
+                fp.close()
+                os.remove(new_thumbs_file)
     yield ']'
 
 def make_file_thumbs(folder):
